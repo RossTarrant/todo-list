@@ -1,3 +1,5 @@
+import {compareAsc, parseISO} from 'date-fns'
+
 export default class Project{
 
     constructor(name){
@@ -22,7 +24,15 @@ export default class Project{
     }
 
     getTodos(){
+        this.sortTodos();
         return this.todos;
+    }
+
+    sortTodos(){
+        this.todos.sort(function(a, b) {
+            let result = compareAsc(parseISO(a.getDueDateForInput()), parseISO(b.getDueDateForInput()));
+            return result;
+        })
     }
 
 }
