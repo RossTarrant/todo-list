@@ -5,7 +5,10 @@ export default class Todo{
     constructor(title, description, dueDate, priority){
         this.title = title;
         this.description = description;
-        this.dueDate = this.setDueDate(dueDate);        
+        this.dueDate = this.setDueDate(dueDate);
+        if(priority===""){
+            priority = 'N/A'
+        }
         this.priority = priority;
     }
 
@@ -31,7 +34,6 @@ export default class Todo{
         let dueDateDay = this.dueDate.split('-')[0];
         let dueDateMonth = this.dueDate.split('-')[1];
         let dueDateYear = this.dueDate.split('-')[2];
-
         if(this.dueDate === fullDate){
             return 'Today';
         }

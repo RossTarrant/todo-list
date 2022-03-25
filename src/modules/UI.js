@@ -57,7 +57,7 @@ export default class UI{
             });
         nav.appendChild(projectTitle);
         })
-
+        
         const addProjectBtn = document.createElement('button');
         addProjectBtn.textContent = 'Add Project';
         addProjectBtn.classList.add('add-project-btn');
@@ -83,6 +83,13 @@ export default class UI{
                         let addProjectError = document.createElement('div');
                         addProjectError.classList.add('error-msg');
                         addProjectError.textContent = "Project name cannot be empty!";
+                        nav.appendChild(addProjectError);
+                    }
+                    else if(addProjectInput.value.length > 20){
+                        addProjectInput.classList.add('add-project-error');
+                        let addProjectError = document.createElement('div');
+                        addProjectError.classList.add('error-msg');
+                        addProjectError.textContent = "Project name must be less than 20 characters!";
                         nav.appendChild(addProjectError);
                     }
                     else if(UI.addProjectIsValid(addProjectInput.value)===true){
@@ -175,7 +182,6 @@ export default class UI{
                 UI.showNavbar();
             }
             clicks++;
-            console.log(clicks);
         });
         header.appendChild(menuImg)
         header.appendChild(heading);
@@ -195,7 +201,78 @@ export default class UI{
                 UI.createAddTodoForm(); 
             }
         });
-        tasks.appendChild(addTaskBtn);
+
+        const deleteProjectBtn = document.createElement('button');
+        deleteProjectBtn.textContent = "Delete Project";
+        deleteProjectBtn.classList.add('task-add-btn');
+        deleteProjectBtn.addEventListener('click', function(){
+            if(currentProject.getName() === 'Inbox'){
+                alert('You cannot delete the Inbox!')
+            }
+            else if(currentProject.getName() === 'Completed Tasks'){
+                alert('You cannot delete Completed Tasks!')
+            }
+            else{
+                controller.removeProject(currentProject);
+                currentProject = controller.getProject('Inbox');
+                UI.refreshNavbar();
+                UI.clearTasks();
+                UI.showTasks(currentProject);  
+            }
+            
+        })
+
+        const sortBtn = document.createElement('button');
+        sortBtn.textContent = "Sort by priority";
+        sortBtn.classList.add('task-add-btn');
+        sortBtn.addEventListener('click', function(){
+            currentProject.changeSortType();
+            if(currentProject.sortType==='date'){
+                sortBtn.textContent = 'Sort by priority';
+            }
+            else{
+                sortBtn.textContent = 'Sort by date';
+            }
+            UI.clearTasks();
+            UI.showTasks(currentProject);  
+        })
+
+        const resetBtn = document.createElement('button');
+        resetBtn.textContent = "Reset";
+        resetBtn.classList.add('task-add-btn');
+        resetBtn.addEventListener('click', function(){
+            localStorage.clear();
+            const content = document.querySelector('.content');
+            const navbar = document.querySelector('.navbar');
+            const tasks = document.querySelector('.tasks');
+            const header = document.querySelector('.header');
+            if(navbar!=null){
+                content.removeChild(navbar);
+            }
+            if(tasks!=null){
+                content.removeChild(tasks);
+            }
+            else{
+                content.removeChild(document.querySelector('.tasks-fullscreen'));
+            }
+            if(header!=null){
+                content.removeChild(header);
+            }
+            else{
+                content.removeChild(document.querySelector('.header-fullscreen'));
+            }
+            controller.projects = [];
+            UI.initLoad();
+        })
+        const toolbarBtns = document.createElement('div');
+        toolbarBtns.classList.add('toolbar');
+
+        toolbarBtns.appendChild(addTaskBtn);
+        toolbarBtns.appendChild(deleteProjectBtn);
+        toolbarBtns.appendChild(sortBtn);
+        toolbarBtns.appendChild(resetBtn);
+
+        tasks.appendChild(toolbarBtns);
         content.appendChild(tasks);
     }
 
@@ -214,8 +291,21 @@ export default class UI{
             taskContainerRight.classList.add('task-container-right');
             let taskTitle = document.createElement('h3');
             let taskDueDate = document.createElement('p');
+            let taskPriority = document.createElement('p');
             taskTitle.textContent = task.getTitle();
             taskDueDate.textContent = task.getDueDate();
+            taskDueDate.classList.add('task-duedate')
+            taskPriority.textContent = task.getPriority();
+            taskPriority.classList.add('task-priority')
+            if(task.getPriority() == 'High'){
+                taskPriority.classList.add('priority-high');
+            }
+            else if(task.getPriority() == 'Medium'){
+                taskPriority.classList.add('priority-medium');
+            }
+            else if(task.getPriority() == 'Low'){
+                taskPriority.classList.add('priority-low');
+            }
             let checkbox = document.createElement('input')
             checkbox.setAttribute('type', 'checkbox')
             checkbox.addEventListener('click', function(){
@@ -240,6 +330,7 @@ export default class UI{
             taskContainerLeft.appendChild(checkbox);
             taskContainerLeft.appendChild(taskTitle);
             taskContainerRight.appendChild(taskDueDate);
+            taskContainerRight.appendChild(taskPriority);
             taskContainerRight.appendChild(editImg);
             taskContainerRight.appendChild(deleteImg);
             taskContainer.appendChild(taskContainerLeft);
@@ -287,6 +378,27 @@ export default class UI{
         todoDateInput.value = task.getDueDateForInput();
         todoEditForm.appendChild(todoDateInput);
 
+        let todoPriorityLabel = document.createElement('label');
+        todoPriorityLabel.textContent = 'Priority';
+        todoEditForm.appendChild(todoPriorityLabel);
+
+        let todoPriorityInput = document.createElement('select');
+        todoPriorityInput.value = task.getPriority();
+        let option1 = document.createElement("option");
+        option1.text = "Low";
+        todoPriorityInput.add(option1);
+        let option2 = document.createElement("option");
+        option2.text = "Medium";
+        todoPriorityInput.add(option2);
+        let option3 = document.createElement("option");
+        option3.text = "High";
+        todoPriorityInput.add(option3);
+        let option4 = document.createElement("option");
+        option4.text = "N/A";
+        todoPriorityInput.add(option4);
+        todoPriorityInput.value = task.getPriority();
+        todoEditForm.appendChild(todoPriorityInput);
+
         todoEditForm.classList.add('edit-form')
         editTodoContainer.appendChild(todoEditForm);
 
@@ -296,6 +408,7 @@ export default class UI{
         confirmBtn.addEventListener('click', () => {
             task.setTitle(todoTitleInput.value);
             task.setDueDate(todoDateInput.value);
+            task.setPriority(todoPriorityInput.value);
             UI.clearTasks();
             UI.showTasks(currentProject);
             content.removeChild(editTodoContainer);
@@ -419,12 +532,22 @@ export default class UI{
     }
 
     static addDemoTodos(inbox){
-        const demoTodo1 = new Todo('Homework', 'Finish english homework', '2022-03-24', 'High');
-        const demoTodo2 = new Todo('Washing', 'Wash my school shirts', '2022-03-25', 'Medium');
-        const demoTodo3 = new Todo('Tidying', 'Tidy up my bedroom', '2022-04-28', 'Low');
+        const demoTodo1 = new Todo('Create a new todo by clicking the Add Task button!', '', '2022-04-14', 'High');
+        const demoTodo2 = new Todo('Change the sort style by clicking the Sort by.. button!', '', '2022-04-16', 'Low');
+        const demoTodo3 = new Todo('Create a new project!', '', '2022-05-25', 'N/A');
+        const demoTodo4 = new Todo('Try deleting a project!', '', '2022-06-28', 'Low');
+        const demoTodo5 = new Todo('Reset your local storage to start afresh!!', '', '2023-11-11', 'Medium');
+        const demoTodo6 = new Todo('Click the checkbox on a task to tick it off!', '', '2022-04-18', 'High');
+        const demoTodo7 = new Todo('Check the completed tasks after ticking off a task!', '', '2022-04-24', 'Low');
+        const demoTodo8= new Todo('Try editing a task!', '', '2022-12-25', 'High');
         inbox.addTodo(demoTodo1);
         inbox.addTodo(demoTodo2);
         inbox.addTodo(demoTodo3);
+        inbox.addTodo(demoTodo4);
+        inbox.addTodo(demoTodo5);
+        inbox.addTodo(demoTodo6);
+        inbox.addTodo(demoTodo7);
+        inbox.addTodo(demoTodo8);
     }
 
 }

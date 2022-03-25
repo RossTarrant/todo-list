@@ -150,6 +150,29 @@ body{
     align-items: center;
 }
 
+.task-duedate{
+    text-align: center;
+    width: 100px;
+}
+
+.task-priority{
+    font-weight: bold;
+    text-align: center;
+    width: 80px;
+}
+
+.priority-high{
+    color: red;
+}
+
+.priority-medium{
+    color: orange;
+}
+
+.priority-low{
+    color: rgb(55, 172, 55);
+}
+
 .task-container-right img:hover{
     transform: scale(1.2);
     cursor: pointer;
@@ -164,10 +187,10 @@ body{
 }
 
 .task-add-btn{
-    width: 200px;
+    width: 150px;
     color: white;
     font-family: 'Lora';
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 600;
     margin: 25px;
     padding: 8px;
@@ -179,6 +202,12 @@ body{
 .task-add-btn:hover{
     background-color: rgb(158, 149, 149);
     cursor: pointer;
+}
+
+.toolbar{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .add-todo-form{
