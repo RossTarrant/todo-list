@@ -278,7 +278,10 @@ export default class UI{
 
     static showTasks(project){
         UI.saveData(controller);
-        const tasks = document.querySelector('.tasks');
+        let tasks = document.querySelector('.tasks');
+        if(tasks==null){
+            tasks = document.querySelector('.tasks-fullscreen');
+        }
         const projectHeading = document.createElement('h1');
         projectHeading.textContent = currentProject.getName();
         tasks.appendChild(projectHeading);
@@ -341,8 +344,12 @@ export default class UI{
 
     static clearTasks(){
         const tasks = document.querySelectorAll('.task-container');
-        const tasksSection = document.querySelector('.tasks');
-        const projectHeading = document.querySelector('.tasks h1')
+        let projectHeading = document.querySelector('.tasks h1')
+        let tasksSection = document.querySelector('.tasks');
+        if(tasksSection==null){
+            tasksSection = document.querySelector('.tasks-fullscreen');
+            projectHeading = document.querySelector('.tasks-fullscreen h1')
+        }
         tasksSection.removeChild(projectHeading);
         tasks.forEach(task => {
             task.remove();
